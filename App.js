@@ -1,20 +1,40 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import TopTabs from './screens/AddTransactions';
+import AppNavigation from './navigation/AppNavigation';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AppNavigation/>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  tabContainer: {
+    
+    backgroundColor: 'green',
     alignItems: 'center',
     justifyContent: 'center',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    height: 70,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+
+    elevation: 4,
   },
+  contentContainer: {
+    backgroundColor: "white",
+    flex: 1
+  },
+  container: {
+    flex: 1
+  }
 });
