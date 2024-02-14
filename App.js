@@ -3,10 +3,13 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopTabs from './screens/AddTransactions';
 import AppNavigation from './navigation/AppNavigation';
-
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 export default function App() {
   return (
-    <AppNavigation/>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <AppNavigation/>
+    </GestureHandlerRootView>
+
   );
 }
 
