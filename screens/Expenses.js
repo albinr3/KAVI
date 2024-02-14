@@ -1,22 +1,29 @@
 import { AntDesign } from '@expo/vector-icons';
-import { Modal, StyleSheet, Text, View,TextInput, Pressable, FlatList, Image, Keyboard } from 'react-native';
+import { Modal, StyleSheet, Text, View,TextInput, Pressable, FlatList, Image, Keyboard, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import DatePicker from 'react-native-modern-datepicker';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Camera, CameraType } from 'expo-camera';
+import { myContext } from '../navigation/ContextProvider';
+import * as FileSystem from 'expo-file-system';
 
 
-export default function Expenses({navigation}) {
-
+export default function Expenses({navigation, route}) {
+  
+  const { photo } = route.params || {}; // Destructuring with default value
+  console.log("this is the photo param", photo)
+  
   const [inputFocused, setInputFocused] = useState(false);
   const [inputFocused2, setInputFocused2] = useState(false);
   const [account, setAccount] = useState("Not selected");
   const [opened, setOpened] = useState(false);
   const [date, setDate] = useState("");
   const [dateSelected, setDateSelected] = useState("");
+  const [categorySelected, setCategorySelected] = useState("");
   const [objectDate, setObjectDate] = useState({});
   const [ready, setReady] = useState(true);
+  const {photoContext, setPhotoContext} = useContext(myContext) || "";
+  console.log("nuevaaa", photoContext)
   
 
   useEffect(() => {
@@ -110,6 +117,40 @@ export default function Expenses({navigation}) {
     }
   }
 
+  const handleCategorySelected = (id) => {
+    // If the same button is pressed again, reset its state
+    if (categorySelected === id) {
+      setCategorySelected(null);
+    } else {
+      // Otherwise, set the new button as selected
+      setCategorySelected(id);
+    }
+  }
+
+  async function deleteImage(imageUri) {
+    try {
+      await FileSystem.deleteAsync(imageUri);
+      console.log('Image deleted successfully');
+    } catch (error) {
+      console.error('Error deleting image:', error);
+    }
+  }
+
+  const handleDeletePhoto = (image)=> {
+    
+      if (image == 1 && photoContext.image1) {
+        const updatedPhotoContext = {...photoContext};
+        delete updatedPhotoContext.image1;
+        deleteImage(photoContext.image1)
+        setPhotoContext(updatedPhotoContext)
+      } else if (image == 2 && photoContext.image2) {
+        const updatedPhotoContext = {...photoContext};
+        delete updatedPhotoContext.image2
+        deleteImage(photoContext.image2)
+        setPhotoContext(updatedPhotoContext)
+      }
+  }
+
   const camera = async () => {
     console.log("hola");
     const result = await launchCamera();
@@ -150,7 +191,9 @@ export default function Expenses({navigation}) {
 
   const renderCategories = (item) => {
     return (
-      <Pressable>
+      <Pressable 
+      onPress={() => handleCategorySelected(item.id)} 
+      style={[categorySelected == item.id && {backgroundColor: "green", borderRadius: 10}]}>
         <View style={styles.itemContainer}>
           <Image 
             style={styles.categoryIcon}
@@ -203,14 +246,60 @@ export default function Expenses({navigation}) {
       <View>
         <Text style={styles.photoText}>Photo</Text>
         <View style={{flexDirection: "row"}}>
-          <Pressable onPress={() => navigation.navigate("Camera")} 
-        
+          {photoContext.image1 ? 
+          (<ImageBackground style={styles.savedImage} source={{uri: photoContext.image1}}>
+            
+            <View style={{
+              position: 'absolute', 
+              top: 0,
+              right: 0,
+              width: 25,
+              height: 25,
+              justifyContent: "center",
+              alignItems: "center"
+              }}>
+              <Pressable onPress={() => handleDeletePhoto(1)} style={{ backgroundColor: "black", borderRadius: 50}}>
+                <AntDesign name="closecircle" size={20} color="white" />
+              </Pressable>
+            </View>
+            </ImageBackground>
+            )
+          
+          :
+          (<Pressable 
+          onPress={() => navigation.navigate("CameraScreen")} 
           style={styles.photoBtn}>
             <AntDesign name="plus" size={32} color="white" />
-          </Pressable>
-          <Pressable style={styles.photoBtn}>
+          </Pressable>)
+
+          }
+          {photoContext.image2 ? 
+          (<ImageBackground style={styles.savedImage} source={{uri: photoContext.image2}}>
+            
+            <View style={{
+              position: 'absolute', 
+              top: 0,
+              right: 0,
+              width: 25,
+              height: 25,
+              justifyContent: "center",
+              alignItems: "center"
+              }}>
+              <Pressable onPress={() => handleDeletePhoto(2)} style={{ backgroundColor: "black", borderRadius: 50}}>
+                <AntDesign name="closecircle" size={20} color="white" />
+              </Pressable>
+            </View>
+            </ImageBackground>
+            )
+          
+          :
+          (<Pressable 
+          onPress={() => navigation.navigate("CameraScreen")} 
+          style={styles.photoBtn}>
             <AntDesign name="plus" size={32} color="white" />
-          </Pressable>
+          </Pressable>)
+
+          }
         </View>
       </View>
     )
@@ -447,6 +536,15 @@ export default function Expenses({navigation}) {
       shadowOpacity: 0.22,
       shadowRadius: 2.22,
       elevation: 3, // Keep the shadow for Android
+    },
+    savedImage: {
+      margin: 12,
+      borderRadius: 12,
+      width: 120,
+      height: 120
+    },
+    categoryBtn: {
+      backgroundColor: "green"
     }
 
   });

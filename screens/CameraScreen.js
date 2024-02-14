@@ -1,10 +1,12 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState, useContext } from 'react'
 import { Camera } from 'expo-camera';
-import { useState } from 'react';
 import { Pressable, StyleSheet, View, Text, ImageBackground } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import { myContext } from '../navigation/ContextProvider';
 
-const CameraPreview = ({photo}) => {
-  console.log('sdsfds', photo)
+const CameraPreview = ({photo, navigation}) => {
+  
+
   return (
     <View
       style={{
@@ -15,21 +17,33 @@ const CameraPreview = ({photo}) => {
       }}
     >
       <ImageBackground
-        source={{uri: photo && photo.uri}}
+        source={{uri: photo}}
         style={{
           flex: 1
         }}
       />
+
+      <View style={styles.buttonContainer}>
+        <Pressable
+         style={styles.button}
+        onPress={() => navigation.navigate("AddTransactions", {screen: "Expenses"})}>
+
+            <Text>Use</Text>
+
+        </Pressable>
+      </View>
     </View>
   )
 }
 
-const CameraScreen = () => {
+const CameraScreen = ({navigation}) => {
 
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const cameraRef = useRef()
   const [previewVisible, setPreviewVisible] = useState(false)
-  const [capturedImage, setCapturedImage] = useState(null)
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [savedImage, setSavedImage] = useState(null);
+  const {photoContext, setPhotoContext} = useContext(myContext);
 
   useEffect(() => {
     (async () => {
@@ -47,19 +61,49 @@ const CameraScreen = () => {
   const handleTakePicture = async ()=> {
     const options = { quality: 0.5, base64: true, skipProcessing: true };
     const photo = await cameraRef.current.takePictureAsync(options)
-    console.log(photo)
+    
     setPreviewVisible(true)
     setCapturedImage(photo)
+    await handleSavePhoto(photo);
   }
 
+  const handleSavePhoto = async (photo) => {
+    if (photo.uri) {
+      // Decide on a unique file name, for example with a timestamp
+      const fileUri = `${FileSystem.documentDirectory}${Date.now()}.jpg`;
   
+      try {
+        // Move the photo from the temporary cache to a persistent file
+        await FileSystem.moveAsync({
+          from: photo.uri,
+          to: fileUri,
+        });
+        setSavedImage(fileUri);
+        if (photoContext.image1) {
+          setPhotoContext(image1 => { 
+            return {...image1, image2: fileUri}
+          })
+        } else {
+          setPhotoContext({image1: fileUri})
+        }
+        
+        console.log(`Photo saved at ${fileUri}`);
+        
+        // Optionally, if you want to save to the device's gallery:
+        // const asset = await MediaLibrary.createAssetAsync(fileUri);
+        // await MediaLibrary.createAlbumAsync('YourAlbumName', asset, false);
+        
+      } catch (error) {
+        console.error('Error saving photo', error);
+      }
+    }
+  };
 
-  
   return (
     
     <View style={styles.container}>
       {previewVisible && capturedImage ? (
-        <CameraPreview photo={capturedImage} />
+        <CameraPreview photo={savedImage} navigation={navigation} />
       ) : (
       <Camera
        ref={cameraRef} 
@@ -68,7 +112,7 @@ const CameraScreen = () => {
 
       <View style={styles.buttonContainer}>
           <Pressable style={styles.button} onPress={handleTakePicture}><Text>+</Text></Pressable>
-        </View>
+      </View>
       </Camera>
         )
       }

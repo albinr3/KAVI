@@ -1,7 +1,8 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import { Pressable, Text } from 'react-native'
-
+import { myContext } from '../navigation/ContextProvider'
 const Home = ({navigation}) => {
+  
   return (
     <>
       <Pressable 
