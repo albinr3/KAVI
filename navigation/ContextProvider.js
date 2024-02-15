@@ -7,7 +7,7 @@ export const myContext = createContext(null);
 
 
 const ContextProvider = ({children}) => {
-const [photoContext, setPhotoContext] = useState("")
+const [photoContext, setPhotoContext] = useState({})
 
 const contextValue = {photoContext, setPhotoContext}
 

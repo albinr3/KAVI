@@ -1,66 +1,42 @@
 import { AntDesign } from '@expo/vector-icons';
-import { Modal, StyleSheet, Text, View,TextInput, Pressable, FlatList, Image, Keyboard, ImageBackground } from 'react-native';
+import { Modal, StyleSheet, Text, View,TextInput, Pressable, Image, Keyboard, ImageBackground, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useContext } from 'react';
 import DatePicker from 'react-native-modern-datepicker';
 import { ScrollView } from 'react-native-gesture-handler';
 import { myContext } from '../navigation/ContextProvider';
 import * as FileSystem from 'expo-file-system';
-
+import { longToday, shortToday, shortTomorrow, shortAfter } from '../tools/DateHandling';
 
 export default function Expenses({navigation, route}) {
   
-  const { photo } = route.params || {}; // Destructuring with default value
-  console.log("this is the photo param", photo)
-  
-  const [inputFocused, setInputFocused] = useState(false);
+  const [inputFocused1, setInputFocused1] = useState(false);
+  const [ammount, setAmmount] = useState("")
+  const [comment, setComment] = useState("")
   const [inputFocused2, setInputFocused2] = useState(false);
   const [account, setAccount] = useState("Not selected");
   const [opened, setOpened] = useState(false);
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(longToday);
   const [dateSelected, setDateSelected] = useState("");
   const [categorySelected, setCategorySelected] = useState("");
-  const [objectDate, setObjectDate] = useState({});
+  const [objectDate, setObjectDate] = useState(
+    {longToday,
+    shortToday,
+    shortTomorrow,
+    shortAfter});
   const [ready, setReady] = useState(true);
-  const {photoContext, setPhotoContext} = useContext(myContext) || "";
-  console.log("nuevaaa", photoContext)
-  
+  const {photoContext, setPhotoContext} = useContext(myContext) || {};
 
+
+  // Listen for changes in required fields and update 'ready' state accordingly
   useEffect(() => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const afterTomorrow = new Date(today);
-    afterTomorrow.setDate(afterTomorrow.getDate() + 2);
+    if (categorySelected && dateSelected && ammount && comment) {
+      setReady(false);
+    } else {
+      setReady(true);
+    }
+  }, [categorySelected, dateSelected, ammount, comment]);
 
-    const formatDate = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}/${month}/${day}`;
-    };
-
-    const formatShortDate = (date) => {
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${day}/${month}`;
-  };
-
-    const longToday = formatDate(today);
-    const shortToday = formatShortDate(today);
-    const shortTomorrow = formatShortDate(tomorrow);
-    const shortAfter = formatShortDate(afterTomorrow);
-
-    setDate(longToday)
-
-    setObjectDate(
-        {longToday,
-        shortToday,
-        shortTomorrow,
-        shortAfter}
-    );
-    
-  }, [])
 
   const [categories, setCategories] = useState([
     { id: "1", name: "health", icon: require("../src/heart.png") },
@@ -80,16 +56,16 @@ export default function Expenses({navigation, route}) {
     { id: 3, date: objectDate.shortAfter, label: 'Day after tomorrow' }
   ];
 
-  const onFocusInput = () => {
-    setInputFocused(true);
+  const onFocusInput1 = () => {
+    setInputFocused1(true);
   }
 
   const onFocusInput2 = () => {
     setInputFocused2(true);
   }
 
-  const onBlurInput = () => {
-    setInputFocused(false);
+  const onBlurInput1 = () => {
+    setInputFocused1(false);
   }
 
   const onBlurInput2 = () => {
@@ -102,7 +78,6 @@ export default function Expenses({navigation, route}) {
   }
 
   const handleDate = (propDate) => {
-    console.log(propDate)
     setDate(propDate)
   }
 
@@ -130,31 +105,22 @@ export default function Expenses({navigation, route}) {
   async function deleteImage(imageUri) {
     try {
       await FileSystem.deleteAsync(imageUri);
-      console.log('Image deleted successfully');
     } catch (error) {
-      console.error('Error deleting image:', error);
+      Alert.alert("Error deleting photo", "Try again later")
     }
   }
 
-  const handleDeletePhoto = (image)=> {
+  const handleDeletePhoto = async (image)=> {
     
-      if (image == 1 && photoContext.image1) {
-        const updatedPhotoContext = {...photoContext};
-        delete updatedPhotoContext.image1;
-        deleteImage(photoContext.image1)
-        setPhotoContext(updatedPhotoContext)
-      } else if (image == 2 && photoContext.image2) {
-        const updatedPhotoContext = {...photoContext};
-        delete updatedPhotoContext.image2
-        deleteImage(photoContext.image2)
-        setPhotoContext(updatedPhotoContext)
-      }
-  }
-
-  const camera = async () => {
-    console.log("hola");
-    const result = await launchCamera();
-    return result;
+    const updatedPhotoContext = { ...photoContext };
+    if (image === 1 && photoContext.image1) {
+      delete updatedPhotoContext.image1;
+      await deleteImage(photoContext.image1);
+    } else if (image === 2 && photoContext.image2) {
+      delete updatedPhotoContext.image2;
+      await deleteImage(photoContext.image2);
+    }
+    setPhotoContext(updatedPhotoContext);
   }
 
   const dateModal = () => {
@@ -177,7 +143,7 @@ export default function Expenses({navigation, route}) {
             onDateChange={handleDate}
             options={{mainColor: 'green'}}
             />
-            <Pressable onPress={handleModal} style={{padding: 10, backgroundColor: "#adff00", borderRadius: 20}}>
+            <Pressable onPress={handleModal} style={styles.modalSelectBtn}>
                 <Text style={{fontSize: 16}}>Select</Text>
             </Pressable>
           </Pressable>
@@ -236,6 +202,8 @@ export default function Expenses({navigation, route}) {
         placeholder='Comment'
         onFocus={onFocusInput2}
         onBlur={onBlurInput2}
+        onChangeText={text => setComment(text)}
+        defaultValue={comment}
         />
       </View>
     )
@@ -311,7 +279,6 @@ export default function Expenses({navigation, route}) {
         
           <Pressable 
           disabled = {ready}
-          onPress={()=> console.log("holaaaa")}
           style={[styles.addButton, ready ? {backgroundColor: "rgba(255, 165, 0, 0.5)",} : styles.shadowStyle ]}>
 
             <Text style={{fontSize: 18, color: "white"}}>Add</Text>
@@ -330,10 +297,12 @@ export default function Expenses({navigation, route}) {
           <TextInput  
           inputMode={'numeric'} 
           textAlign={"center"} 
-          style={[styles.input, { borderBottomColor: inputFocused ? '#adff00' : '#afba96' }]}
+          style={[styles.input, { borderBottomColor: inputFocused1 ? '#adff00' : '#afba96' }]}
           placeholder='0'
-          onFocus={onFocusInput}
-          onBlur={onBlurInput}
+          onFocus={onFocusInput1}
+          onBlur={onBlurInput1}
+          onChangeText={text => setAmmount(text)}
+          defaultValue={ammount}
           />
           <Text style={styles.currencyText}>DOP</Text>
         </View>
@@ -364,6 +333,9 @@ export default function Expenses({navigation, route}) {
     );
   }
   
+
+  const modalContainerMarginTop = 22;
+
   const styles = StyleSheet.create({
     tabContainer: {
       
@@ -433,7 +405,7 @@ export default function Expenses({navigation, route}) {
       padding: 10
     },
     modalContainer: {
-      marginTop: 22,
+      marginTop: modalContainerMarginTop,
       flex: 1,
       justifyContent: "center"
     },
@@ -545,6 +517,11 @@ export default function Expenses({navigation, route}) {
     },
     categoryBtn: {
       backgroundColor: "green"
+    },
+    modalSelectBtn: {
+      padding: 10, 
+      backgroundColor: "#adff00", 
+      borderRadius: 20
     }
 
   });
