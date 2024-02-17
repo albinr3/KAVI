@@ -25,10 +25,12 @@ export default function Expenses({navigation, route}) {
     shortTomorrow,
     shortAfter});
   const [ready, setReady] = useState(true);
+
+  // Context hook to utilize global context for photos management.
   const {photoContext, setPhotoContext} = useContext(myContext) || {};
 
 
-  // Listen for changes in required fields and update 'ready' state accordingly
+  // Effect hook that checks if all required fields are filled out to enable the 'Add' button.
   useEffect(() => {
     if (categorySelected && dateSelected && ammount && comment) {
       setReady(false);
@@ -37,7 +39,7 @@ export default function Expenses({navigation, route}) {
     }
   }, [categorySelected, dateSelected, ammount, comment]);
 
-
+  // State hook that stores the hardcoded categories for expenses.
   const [categories, setCategories] = useState([
     { id: "1", name: "health", icon: require("../src/heart.png") },
     { id: "2", name: "Leisure", icon: require("../src/wallet.png") },
@@ -56,6 +58,7 @@ export default function Expenses({navigation, route}) {
     { id: 3, date: objectDate.shortAfter, label: 'Day after tomorrow' }
   ];
 
+  // Helper functions to handle input focus and blur events.
   const onFocusInput1 = () => {
     setInputFocused1(true);
   }
@@ -72,11 +75,13 @@ export default function Expenses({navigation, route}) {
     setInputFocused2(false);
   }
 
+
+  // Function that toggles the visibility of the modal.
   const handleModal = () => {
-    
     setOpened(!opened)
   }
 
+  // Date handling related functions.
   const handleDate = (propDate) => {
     setDate(propDate)
   }
@@ -92,6 +97,7 @@ export default function Expenses({navigation, route}) {
     }
   }
 
+  //Fuction to handle if a category is selected or not
   const handleCategorySelected = (id) => {
     // If the same button is pressed again, reset its state
     if (categorySelected === id) {
@@ -102,6 +108,7 @@ export default function Expenses({navigation, route}) {
     }
   }
 
+  // Async function to delete an image from the filesystem.
   async function deleteImage(imageUri) {
     try {
       await FileSystem.deleteAsync(imageUri);
@@ -110,9 +117,11 @@ export default function Expenses({navigation, route}) {
     }
   }
 
+  // Function to manage deletion of photos stored in the context.
   const handleDeletePhoto = async (image)=> {
     
-    const updatedPhotoContext = { ...photoContext };
+    const updatedPhotoContext = { ...photoContext }; //first we get a copy of the context object
+
     if (image === 1 && photoContext.image1) {
       delete updatedPhotoContext.image1;
       await deleteImage(photoContext.image1);
@@ -120,9 +129,10 @@ export default function Expenses({navigation, route}) {
       delete updatedPhotoContext.image2;
       await deleteImage(photoContext.image2);
     }
-    setPhotoContext(updatedPhotoContext);
+    setPhotoContext(updatedPhotoContext); //after delete, we update the photocontext with the new object
   }
 
+  // Component rendering the date picker modal.
   const dateModal = () => {
     return (
       
@@ -154,6 +164,23 @@ export default function Expenses({navigation, route}) {
       
     )
   }
+
+  // Functions responsible for rendering parts of the component UI.
+  const renderAmmount = () => { 
+    <View style={styles.inputContainer}>
+      <TextInput  
+      inputMode={'numeric'} 
+      textAlign={"center"} 
+      style={[styles.input, { borderBottomColor: inputFocused1 ? '#adff00' : '#afba96' }]}
+      placeholder='0'
+      onFocus={onFocusInput1}
+      onBlur={onBlurInput1}
+      onChangeText={text => setAmmount(text)}
+      defaultValue={ammount}
+      />
+      <Text style={styles.currencyText}>DOP</Text>
+    </View>
+   }
 
   const renderCategories = (item) => {
     return (
@@ -289,24 +316,11 @@ export default function Expenses({navigation, route}) {
     )
   }
 
-
+  // Main component JSX layout.
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView>
-        <View style={styles.inputContainer}>
-          <TextInput  
-          inputMode={'numeric'} 
-          textAlign={"center"} 
-          style={[styles.input, { borderBottomColor: inputFocused1 ? '#adff00' : '#afba96' }]}
-          placeholder='0'
-          onFocus={onFocusInput1}
-          onBlur={onBlurInput1}
-          onChangeText={text => setAmmount(text)}
-          defaultValue={ammount}
-          />
-          <Text style={styles.currencyText}>DOP</Text>
-        </View>
-        
+        {renderAmmount()}
         <Pressable onPress={()=> {Keyboard.dismiss()}}>
           <View style={styles.accountContainer}>
             <Text style={styles.accountText}>Account</Text>
