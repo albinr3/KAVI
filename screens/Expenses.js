@@ -167,19 +167,22 @@ export default function Expenses({navigation, route}) {
 
   // Functions responsible for rendering parts of the component UI.
   const renderAmmount = () => { 
-    <View style={styles.inputContainer}>
-      <TextInput  
-      inputMode={'numeric'} 
-      textAlign={"center"} 
-      style={[styles.input, { borderBottomColor: inputFocused1 ? '#adff00' : '#afba96' }]}
-      placeholder='0'
-      onFocus={onFocusInput1}
-      onBlur={onBlurInput1}
-      onChangeText={text => setAmmount(text)}
-      defaultValue={ammount}
-      />
-      <Text style={styles.currencyText}>DOP</Text>
-    </View>
+    return (
+      <View style={styles.inputContainer}>
+        <TextInput  
+        inputMode={'numeric'} 
+        textAlign={"center"} 
+        style={[styles.input, { borderBottomColor: inputFocused1 ? '#adff00' : '#afba96' }]}
+        placeholder='0'
+        onFocus={onFocusInput1}
+        onBlur={onBlurInput1}
+        onChangeText={text => setAmmount(text)}
+        defaultValue={ammount}
+        />
+        <Text style={styles.currencyText}>DOP</Text>
+      </View>
+    )
+    
    }
 
   const renderCategories = (item) => {

@@ -10,6 +10,12 @@ const Home = ({navigation}) => {
       onPress={()=>navigation.navigate("AddTransactions")}>
         <Text>Ir a transacciones</Text>
       </Pressable>
+
+      <Pressable 
+      style={{padding: 10, backgroundColor: "blue"}} 
+      onPress={()=>navigation.navigate("PayJob")}>
+        <Text>Ir a pagos</Text>
+      </Pressable>
     </>
   )
 }

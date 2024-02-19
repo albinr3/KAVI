@@ -6,6 +6,7 @@ import TopTabs from '../screens/AddTransactions';
 import Home from '../screens/Home';
 import CameraScreen from '../screens/CameraScreen';
 import ContextProvider from './ContextProvider';
+import PayJob from '../screens/PayJob';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ const AppNavigation = () => {
         <Stack.Navigator screenOptions={{headerStyle:{backgroundColor: "green"},headerTintColor: "white"}}>
             <Stack.Screen name="Home" component={Home}/>
             <Stack.Screen name="AddTransactions" component={TopTabs}/>
+            <Stack.Screen name="PayJob" component={PayJob}/>
             <Stack.Screen name="CameraScreen" component={CameraScreen}/>
         </Stack.Navigator>
     </NavigationContainer>
