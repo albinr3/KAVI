@@ -78,14 +78,6 @@ export default function PayRoll() {
   //CUSTOM GRID
   ////////////////////////////////
 
-  const handleItemClick = (item) => {
-    if (selectedItems.includes(item)) {
-      setSelectedItems(selectedItems.filter((selected) => selected !== item));
-    } else {
-      setSelectedItems([...selectedItems, item]);
-    }
-  };
-
   const employees = [
     {
       name: "Employee 1",
@@ -98,6 +90,17 @@ export default function PayRoll() {
     // Add more employees as needed
   ];
 
+
+  const handleItemClick = (item) => {
+    if (selectedItems.includes(item)) {
+      setSelectedItems(selectedItems.filter((selected) => selected !== item));
+    } else {
+      setSelectedItems([...selectedItems, item]);
+      console.log(selectedItems)
+    }
+  };
+
+  
   const HeaderItem = ({ title }) => (
     <View style={styles.headerItem}>
       <Text>{title}</Text>
@@ -137,7 +140,7 @@ export default function PayRoll() {
           {employee.schedule.map((day, dayIndex) => (
             <GridItemEmpty
               key={dayIndex}
-              onPress={(item) => handleItemClick(item)}
+              onPress={() => handleItemClick(`${employee.name} - ${day}`)}
               item={`${employee.name} - ${day}`}
             />
           ))}

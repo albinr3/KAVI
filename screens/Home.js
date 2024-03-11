@@ -1,8 +1,13 @@
-import React, {useContext} from 'react'
+import React, {useContext, useEffect} from 'react'
 import { Pressable, Text } from 'react-native'
 import { myContext } from '../navigation/ContextProvider'
+import axios from 'axios';
+
 const Home = ({navigation}) => {
-  
+
+
+
+
   return (
     <>
       <Pressable 
