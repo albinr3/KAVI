@@ -8,7 +8,7 @@ import CameraScreen from '../screens/CameraScreen';
 import ContextProvider from './ContextProvider';
 import PayJob from '../screens/PayJob';
 import PayRoll from '../screens/PayRoll';
-
+import RegisterEmployee from '../screens/RegisterEmployee';
 const Stack = createNativeStackNavigator();
 
 
@@ -23,6 +23,7 @@ const AppNavigation = () => {
             <Stack.Screen name="PayJob" component={PayJob}/>
             <Stack.Screen name="PayRoll" component={PayRoll}/>
             <Stack.Screen name="CameraScreen" component={CameraScreen}/>
+            <Stack.Screen name="RegisterEmployee" component={RegisterEmployee}/>
         </Stack.Navigator>
     </NavigationContainer>
     </ContextProvider>

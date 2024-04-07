@@ -21,6 +21,12 @@ const Home = ({navigation}) => {
       onPress={()=>navigation.navigate("PayRoll")}>
         <Text>Ir a pagos</Text>
       </Pressable>
+
+      <Pressable 
+      style={{padding: 10, backgroundColor: "green"}} 
+      onPress={()=>navigation.navigate("RegisterEmployee")}>
+        <Text>Ir a registrar empleados</Text>
+      </Pressable>
     </>
   )
 }

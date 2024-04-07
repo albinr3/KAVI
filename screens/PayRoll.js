@@ -6,6 +6,7 @@ import {
   View,
   TouchableWithoutFeedback,
   Pressable,
+  ScrollView,
 } from "react-native";
 
 import { DeviceMotion } from 'expo-sensors';
@@ -27,77 +28,13 @@ export default function PayRoll() {
 
 
   useEffect(() => {
-    checkOrientation();
-    const subscription = ScreenOrientation.addOrientationChangeListener(
-      handleOrientationChange
-    );
-    return () => subscription.remove();
+
+    async function changeScreenOrientation() {
+      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
+    }
+    changeScreenOrientation()
   }, []);
 
-  const checkOrientation = async () => {
-    const orientation = await ScreenOrientation.getOrientationAsync();
-    setOrientation(orientation);
-  };
-
-
-  const handleOrientationChange = (o) => {
-    setOrientation(o.orientationInfo.orientation);
-  };
-
-
-  
-  //CALENDAR
-  /////////////////////////////////
-  // const customDayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  // const customDayHeaderStyles = () => {
-  //   return {
-  //     style: { justifyContent: "center" }, // Adjust the marginLeft as needed
-  //     textStyle: { fontSize: 12, textAlign: "center" }, // Optional: adjust the font size
-  //   };
-  // };
-
-  // const onDateChange = (date) => {
-  //   if (startDate && !endDate) {
-  //     setEndDate(date);
-  //   } else {
-  //     setStartDate(date);
-  //     setEndDate(null);
-  //   }
-  // };
-
-  // const onStartChange = (date) => {
-  //   setStartDate(date);
-  // };
-
-  // const start = startDate ? startDate.toString() : "";
-  // const end = endDate ? endDate.toString() : "";
-
-  // const dateModal = () => {
-  //   return (
-  //     <Modal animationType="slide" transparent={true} visible={opened}>
-  //       <Pressable style={styles.modalContainer}>
-  //         <Pressable
-  //           style={styles.modalInnerContainer}
-  //           onPress={(e) => {
-  //             e.stopPropagation(); // Prevent the event from bubbling up
-  //           }}
-  //         >
-  //           <CalendarPicker
-  //             allowRangeSelection
-  //             onDateChange={onDateChange}
-  //             onStartChange={onStartChange}
-  //             minRangeDuration={5}
-  //             weekdays={customDayLabels}
-  //             customDatesStyles={customDayHeaderStyles}
-  //           />
-
-  //           <Text>startDate:{start}</Text>
-  //           <Text>endDate: {end}</Text>
-  //         </Pressable>
-  //       </Pressable>
-  //     </Modal>
-  //   );
-  // };
 
   //CUSTOM GRID
   ////////////////////////////////
@@ -110,6 +47,16 @@ export default function PayRoll() {
     },
     {
       name: "Employee 2",
+      schedule: ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"],
+      salary: 300
+    },
+    {
+      name: "Employee 3",
+      schedule: ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"],
+      salary: 500
+    },
+    {
+      name: "Employee 4",
       schedule: ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"],
       salary: 300
     },
@@ -199,18 +146,35 @@ export default function PayRoll() {
     )
   };
 
+  const subtotalsPerEmployee = useMemo(() => {
+    const subtotals = {};
+    selectedItems.forEach(item => {
+      const name = Object.keys(item)[0];
+      const daysWorked = item[name].length;
+      const employeeData = employees.find(e => e.name === name);
+      if (employeeData) {
+        subtotals[name] = daysWorked * employeeData.salary;
+      }
+    });
+    return subtotals;
+  }, [selectedItems, employees]);
+
+  const totalSalary = useMemo(() => {
+    return Object.values(subtotalsPerEmployee).reduce((acc, current) => acc + current, 0);
+  }, [subtotalsPerEmployee]);
+
   const SubTotalRender = ({salary, days}) => {
-    const subTotal = salary * days;
+    const subTotal = (salary || 0) * (days || 0);
+  
     return (
       <View style={styles.subTotal}>
         <Text style={{fontWeight: "bold"}}>${subTotal}</Text>
       </View>
-    )
-    
+    );
   }
 
   const customGrid = () => (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <HeaderItem title="Employee" />
         {["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"].map((day, index) => (
@@ -236,7 +200,12 @@ export default function PayRoll() {
         </View>
         
       ))}
-    </View>
+      <View style={styles.totalSalary}>
+        <Text style={{fontSize: 18, fontWeight: "bold", marginRight: 4}}>Total:</Text>
+        <Text style={{marginRight: 12, fontSize: 18, fontWeight: "bold"}}>${totalSalary}</Text>
+      </View>
+      
+    </ScrollView>
     
   );
 
@@ -303,6 +272,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
+   
   },
   headerItem: {
     flex: 1,
@@ -310,8 +280,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   gridItem: {
-    flex: 1,
+    width:81,
     padding: 10,
+    
     alignItems: "center",
     borderWidth: 1,
     justifyContent: "center"
@@ -319,5 +290,11 @@ const styles = StyleSheet.create({
   subTotal: {
     padding: 10,
     justifyContent: "center"
+  },
+  totalSalary: {
+    flexDirection: "row",
+    padding: 10,
+    borderWidth: 2,
+    justifyContent: "flex-end"
   }
 });
